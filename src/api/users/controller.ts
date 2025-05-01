@@ -87,6 +87,10 @@ actions.UpdateMeProfilePicture = async function (req: Request, res: Response): P
         }
         profilePicture.originalname = user.id + "." + profilePicture.originalname.split(".").pop();
 
+        if (!storage) {
+            res.status(500).send({ message: "Storage service is not initialized" });
+            return;
+        }
         const files = await storage.listFiles(Config.appwrite.bucketProfileId);
         const existingFile = files.files.find(file => file.name === profilePicture.originalname);
 
