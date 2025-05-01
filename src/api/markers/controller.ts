@@ -1,19 +1,18 @@
 import { generalLogger } from "../../services/logger/winston.ts";
 import { generateControllers } from "../../utils/lib/generator/index.ts";
-import { Request, Response } from "express";
+import { Response } from "express";
 
 import Marker from "./model.ts";
 
 const actions = generateControllers(Marker, "marker");
 
-actions.getClustered = async function (req: Request, res: Response): Promise<void> {
-  const { lat, lng, radius = 5000 } = req.query;
+actions.getClustered = async function ({ query }, res: Response): Promise<void> {
+  const { lat, lng, radius = 1000000 } = query as { lat?: string; lng?: string; radius?: string };
 
   if (!lat || !lng) {
     res.status(400).json({ error: 'Latitude and longitude required.' });
     return;
   }
-
   try {
     const clusters = await Marker.aggregate([
       {
@@ -30,8 +29,8 @@ actions.getClustered = async function (req: Request, res: Response): Promise<voi
       {
         $group: {
           _id: {
-            lat: { $round: ['$location.coordinates.1', 2] },
-            lng: { $round: ['$location.coordinates.0', 2] },
+            lat: { $round: [{ $arrayElemAt: ['$location.coordinates', 1] }, 2] },
+            lng: { $round: [{ $arrayElemAt: ['$location.coordinates', 0] }, 2] },
           },
           count: { $sum: 1 },
           markers: { $push: '$$ROOT' },
@@ -46,7 +45,7 @@ actions.getClustered = async function (req: Request, res: Response): Promise<voi
         },
       },
     ]);
-
+    
     res.json(clusters);
   } catch (err) {
     generalLogger.error(`Failed to fetch clusters: ${err}`);

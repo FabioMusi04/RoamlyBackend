@@ -1,4 +1,4 @@
-import { Model, Schema, SchemaOptions, SchemaDefinition, SchemaDefinitionType, ResolveSchemaOptions, DefaultSchemaOptions } from 'mongoose';
+import { Model, Schema, SchemaOptions, SchemaDefinition, SchemaDefinitionType, ResolveSchemaOptions, DefaultSchemaOptions, IndexDirection } from 'mongoose';
 import _ from 'lodash';
 
 interface Configuration<> {
@@ -12,7 +12,7 @@ interface Configuration<> {
     methods?: Record<string, (this: any, ...args: any[]) => any>;
     // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-explicit-any
     statics?: Record<string, (this: any, ...args: any[]) => any>;
-    indexes?: Array<{ fields: Record<string, 1 | -1>; options?: Record<string, unknown> }>;
+    indexes?: Array<{ fields: Record<string, 1 | -1 | string>; options?: Record<string, unknown> }>;
 }
 
 
@@ -71,7 +71,7 @@ export class ConfigurableSchema<T = unknown, TModel extends Model<any, any, any,
         // Apply indexes
         if (_.isArray(configuration.indexes)) {
             configuration.indexes.forEach(({ fields, options }) => {
-                this.index(fields, options);
+                this.index(fields as Record<string, IndexDirection>, options);
             });
         }
     }

@@ -10,7 +10,7 @@ export interface IMarker extends Document {
     type: 'Point';
     coordinates: [number, number]; // [longitude, latitude]
   };
-  authorId: mongoose.Schema.Types.ObjectId;
+  userId: mongoose.Schema.Types.ObjectId;
 }
 
 interface IMarkerMethods {
@@ -31,13 +31,14 @@ const markerSchema = new ConfigurableSchema<IMarker, MarkerModel, IMarkerMethods
         type: String,
         enum: ['Point'],
         required: true,
+        default: 'Point',
       },
       coordinates: {
-        type: [Number], // [lng, lat]
+        type: [Number], // [latitude, longitude]
         required: true,
       },
     },
-    authorId: {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
@@ -55,15 +56,18 @@ const markerSchema = new ConfigurableSchema<IMarker, MarkerModel, IMarkerMethods
       },
       indexes: [
         {
-          fields: { location: 1 },
-          options: { type: '2dsphere' },
+          fields: {
+            location: '2dsphere',
+          },
         },
       ],
+
     },
   }
 );
 
 const Marker = mongoose.model<IMarker, MarkerModel>('Marker', markerSchema);
+
 export const swaggerSchema = mongooseToSwagger(Marker);
 
 export default Marker;

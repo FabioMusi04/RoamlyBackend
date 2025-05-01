@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { validateFilterFields } from '../queryFilters/index.ts';
 import { getByIdSchema, querySchema } from './middlewares/index.ts';
 import { getFieldsToPopulate } from '../populate/index.ts';
+import { IUser } from '../../../api/users/model.ts';
 
 /* eslint-disable no-unused-vars */
 type ControllerFunctions = {
@@ -31,7 +32,10 @@ export function generateControllers<T>(model: Model<T>, name: string): Controlle
          */
         create: async (req: Request, res: Response) => {
             try {
-                const newDoc = new model(req.body);
+                const newDoc = new model({
+                    ...req.body,
+                    ...(req.user && { userId: (req.user as IUser)._id }),
+                });
                 const savedDoc = await newDoc.save();
                 res.status(201).json(savedDoc);
             } catch (error) {
@@ -105,16 +109,12 @@ export function generateControllers<T>(model: Model<T>, name: string): Controlle
                 const updatedDoc = await model.findOne({ _id: id, isDeleted: { $ne: true } });
                 if (!updatedDoc) {
                     res.status(404).json({ message: `${name} not found` });
+                    return;
                 } else {   
                     updatedDoc.set(req.body);
                     await updatedDoc.save();
                     res.status(200).json(updatedDoc);
-                }
-
-                if (!updatedDoc) {
-                    res.status(404).json({ message: `${name} not found` });
-                } else {
-                    res.status(200).json(updatedDoc);
+                    return;
                 }
             } catch (error) {
                 res.status(400).json({ message: `Failed to update ${name}: ${error.message}` });
