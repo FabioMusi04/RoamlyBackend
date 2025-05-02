@@ -8,7 +8,7 @@ import User, { IUser } from "./model.ts";
 
 const actions = generateControllers(User, "user");
 
-actions.GetMe = async function (req: Request, res: Response): Promise<void> {
+actions.getMe = async function (req: Request, res: Response): Promise<void> {
     try {
         if (!req.user) {
             res.status(404).send({ message: "User not found" });
@@ -26,7 +26,7 @@ actions.GetMe = async function (req: Request, res: Response): Promise<void> {
     }
 }
 
-actions.UpdateMe = async function (req: Request, res: Response): Promise<void> {
+actions.updateMe = async function (req: Request, res: Response): Promise<void> {
     try {
         if (!req.user) {
             res.status(404).send({ message: "User not found" });
@@ -49,7 +49,7 @@ actions.UpdateMe = async function (req: Request, res: Response): Promise<void> {
     }
 }
 
-actions.UpdateMePassword = async function (req: Request, res: Response): Promise<void> {
+actions.updateMePassword = async function (req: Request, res: Response): Promise<void> {
     try {
         if (!req.user) {
             res.status(404).send({ message: "User not found" });
@@ -69,7 +69,7 @@ actions.UpdateMePassword = async function (req: Request, res: Response): Promise
     }
 }
 
-actions.UpdateMeProfilePicture = async function (req: Request, res: Response): Promise<void> {
+actions.updateMeProfilePicture = async function (req: Request, res: Response): Promise<void> {
     try {
         if (!req.user) {
             res.status(404).send({ message: "User not found" });
@@ -139,5 +139,30 @@ actions.UpdateMeProfilePicture = async function (req: Request, res: Response): P
         res.status(500).send({ message: error.message });
     }
 } */
+
+
+actions.searchByUsername = async function (req: Request, res: Response): Promise<void> {
+    try {
+        if (!req.user) {
+            res.status(404).send({ message: "User not found" });
+            return;
+        }
+
+        const { username } = req.query;
+        if (!username) {
+            res.status(400).send({ message: "Username is required" });
+            return;
+        }
+
+        const users = await User.find({
+            username: { $regex: username, $options: "i" },
+            _id: { $ne: (req.user as IUser)._id },
+        }).select("username profilePicture"); 
+
+        res.send(users);
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+};
 
 export { actions };

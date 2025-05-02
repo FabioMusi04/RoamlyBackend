@@ -34,6 +34,31 @@ router.get('/', authenticate(false, [UsersRoleEnum.ADMIN]), actions.getAll);
 
 /**
  * @swagger
+ * /users/search:
+ *   get:
+ *     summary: Search for a user by username
+ *     tags: [Users]
+ *     parameters:
+ *       - in: query
+ *         name: username
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The username to search for
+ *     responses:
+ *       200:
+ *         description: The user matching the username
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ */
+router.get('/search', authenticate(), actions.searchByUsername);
+
+/**
+ * @swagger
  * /users/me:
  *   get:
  *     summary: Get the current user
@@ -54,7 +79,7 @@ router.get('/', authenticate(false, [UsersRoleEnum.ADMIN]), actions.getAll);
  *       500:
  *         description: Internal Server Error
  */
-router.get('/me', authenticate(), actions.GetMe);
+router.get('/me', authenticate(), actions.getMe);
 
 /**
  * @swagger
@@ -182,7 +207,7 @@ router.post('/', authenticate(false, [UsersRoleEnum.ADMIN]), actions.create);
  *       404:
  *         description: User not found
  */
-router.put('/me', authenticate(), validateBody(UpdateMeSchema), actions.UpdateMe);
+router.put('/me', authenticate(), validateBody(UpdateMeSchema), actions.updateMe);
 
 /**
  * @swagger
@@ -221,7 +246,7 @@ router.put('/me', authenticate(), validateBody(UpdateMeSchema), actions.UpdateMe
  *       404:
  *         description: User not found
  */
-router.put('/me/password', authenticate(), validateBody(UpdateMePasswordSchema), actions.UpdateMePassword);
+router.put('/me/password', authenticate(), validateBody(UpdateMePasswordSchema), actions.updateMePassword);
 
 /**
  * @swagger
@@ -258,7 +283,7 @@ router.put('/me/password', authenticate(), validateBody(UpdateMePasswordSchema),
  *       404:
  *         description: User not found
  */
-router.post('/me/profile-picture', authenticate(), upload.single('file'), actions.UpdateMeProfilePicture);
+router.post('/me/profile-picture', authenticate(), upload.single('file'), actions.updateMeProfilePicture);
 
 /**
  * @swagger
