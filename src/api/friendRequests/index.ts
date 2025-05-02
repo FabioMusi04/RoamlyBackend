@@ -45,6 +45,42 @@ router.get('/me', authenticate(), queryFormat, actions.getMe);
 
 /**
  * @swagger
+ * /friendRequests/received:
+ *   get:
+ *     summary: Get friend requests received by the authenticated user
+ *     tags: [FriendRequests]
+ *     responses:
+ *       200:
+ *         description: List of friend requests received by the user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/FriendRequest'
+ */
+router.get('/received', authenticate(), queryFormat, actions.getReceivedByMe);
+
+/**
+ * @swagger
+ * /friendRequests/sent:
+ *   get:
+ *     summary: Get friend requests sent by the authenticated user
+ *     tags: [FriendRequests]
+ *     responses:
+ *       200:
+ *         description: List of friend requests sent by the user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/FriendRequest'
+ */
+router.get('/sent', authenticate(), queryFormat, actions.getSentByMe);
+
+/**
+ * @swagger
  * /friendRequests:
  *   get:
  *     summary: Get all friend requests
