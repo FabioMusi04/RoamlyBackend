@@ -50,7 +50,7 @@ const friendRequestSchema = new ConfigurableSchema<IFriendRequest, FriendRequest
     timestamps: true,
     configuration: {
       methods: {
-        toJSON() {
+        toJSON(this: IFriendRequest) {
           const obj = this.toObject();
           delete obj.__v;
           delete obj.pairKey
