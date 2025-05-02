@@ -4,10 +4,11 @@ import mongooseToSwagger from 'mongoose-to-swagger';
 
 export interface IFriendRequest extends Document {
   userId: mongoose.Schema.Types.ObjectId;
-  receiverId: mongoose.Schema.Types.ObjectId; 
+  receiverId: mongoose.Schema.Types.ObjectId;
   status: 'pending' | 'accepted' | 'rejected';
   createdAt?: Date;
   updatedAt?: Date;
+  pairKey: string;
 }
 
 interface IFriendRequestMethods {
@@ -41,6 +42,9 @@ const friendRequestSchema = new ConfigurableSchema<IFriendRequest, FriendRequest
       default: FriendRequestStatus.PENDING,
       required: true,
     },
+    pairKey: {
+      type: String,
+    },
   },
   {
     timestamps: true,
@@ -49,21 +53,27 @@ const friendRequestSchema = new ConfigurableSchema<IFriendRequest, FriendRequest
         toJSON() {
           const obj = this.toObject();
           delete obj.__v;
+          delete obj.pairKey
           return obj;
         },
       },
       indexes: [
         {
-          fields: {
-            userId: 1,
-            receiverId: 1,
-          },
+          fields: { pairKey: 1 },
           options: { unique: true },
-        },
+        }
       ],
+      pre: {
+        save: [
+          async function (this: IFriendRequest, next: () => void) {
+            if (!this.isNew) return next();
+            this.pairKey = `${this.userId}-${this.receiverId}`;
+            next();
+          },
+        ],
+      }
     },
-  }
-);
+  });
 
 const FriendRequest = mongoose.model<IFriendRequest, FriendRequestModel>('FriendRequest', friendRequestSchema);
 
