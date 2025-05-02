@@ -17,8 +17,8 @@ actions.getMe = async (req: Request, res: Response): Promise<void> => {
 
     const friendRequests = await FriendRequest.find({
       $or: [
-        { userId },
-        { receiverId: userId },
+        { userId: (req.user as IUser)._id },
+        { receiverId: (req.user as IUser)._id },
       ],
       ...(status && { status }),
     }).populate("userId", "-password -salt -__v")
@@ -26,9 +26,12 @@ actions.getMe = async (req: Request, res: Response): Promise<void> => {
 
     const mappedRequests = friendRequests.map((request) => {
       const { userId, receiverId, ...rest } = request.toObject();
+     
+      const idSender = ((userId as unknown) as IUser)._id;
+
       return {
         ...rest,
-        receiverId: ((userId as unknown) as IUser)._id !== ((req.user as unknown) as IUser)._id ? userId : receiverId,
+        receiverId: (idSender as string).toString() !== ((req.user as IUser)._id as string).toString() ? userId : receiverId,
       };
     });
 
